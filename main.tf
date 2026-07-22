@@ -14,14 +14,7 @@
 
 # Future versions of the script may add modularity if it is needed, though the intent of the script is to be simple and have limited configurability.
 
-terraform {
-  required_providers {
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.0"
-    }
-  }
-}
+
 
 provider "google" {
   project = var.project-id
@@ -34,12 +27,6 @@ data "http" "my_public_ip" {
 locals {
   # The chomp() function removes the trailing newline character from the response body
   cleaned_ip = chomp(data.http.my_public_ip.response_body)
-}
-
-# 4. Output the result for verification
-output "my_ip" {
-  value       = local.cleaned_ip
-  description = "The public IP address of the machine executing Terraform."
 }
 
 
