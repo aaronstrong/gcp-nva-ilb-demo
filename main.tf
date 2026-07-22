@@ -14,696 +14,725 @@
 
 # Future versions of the script may add modularity if it is needed, though the intent of the script is to be simple and have limited configurability.
 
+terraform {
+  required_providers {
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.0"
+    }
+  }
+}
 
 provider "google" {
- project = var.project-id
+  project = var.project-id
+}
+
+data "http" "my_public_ip" {
+  url = "https://ipv4.icanhazip.com"
+}
+
+locals {
+  # The chomp() function removes the trailing newline character from the response body
+  cleaned_ip = chomp(data.http.my_public_ip.response_body)
+}
+
+# 4. Output the result for verification
+output "my_ip" {
+  value       = local.cleaned_ip
+  description = "The public IP address of the machine executing Terraform."
 }
 
 
 resource "google_compute_network" "vpc-hub1" {
- name                            = "${var.vpc-prefix}hub1"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${var.vpc-prefix}hub1"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-hub1" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub1.name}"
- ip_cidr_range = "${var.subnet1-vpc-hub1-first-three-octets}${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-hub1.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub1.name}"
+  ip_cidr_range = "${var.subnet1-vpc-hub1-first-three-octets}${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-hub1.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-hub1-spoke1" {
- name                            = "${google_compute_network.vpc-hub1.name}-spoke1"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${google_compute_network.vpc-hub1.name}-spoke1"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-hub1-spoke1" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub1-spoke1.name}"
- ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.1${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-hub1-spoke1.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub1-spoke1.name}"
+  ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.1${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-hub1-spoke1.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-hub1-spoke2" {
- name                            = "${google_compute_network.vpc-hub1.name}-spoke2"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${google_compute_network.vpc-hub1.name}-spoke2"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-hub1-spoke2" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub1-spoke2.name}"
- ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.2${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-hub1-spoke2.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub1-spoke2.name}"
+  ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.2${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-hub1-spoke2.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-hub2" {
- name                            = "${var.vpc-prefix}hub2"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${var.vpc-prefix}hub2"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-hub2" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub2.name}"
- ip_cidr_range = "${var.subnet1-vpc-hub2-first-three-octets}${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-hub2.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub2.name}"
+  ip_cidr_range = "${var.subnet1-vpc-hub2-first-three-octets}${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-hub2.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-hub2-spoke1" {
- name                            = "${google_compute_network.vpc-hub2.name}-spoke1"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${google_compute_network.vpc-hub2.name}-spoke1"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-hub2-spoke1" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub2-spoke1.name}"
- ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.1${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-hub2-spoke1.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub2-spoke1.name}"
+  ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.1${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-hub2-spoke1.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-hub2-spoke2" {
- name                            = "${google_compute_network.vpc-hub2.name}-spoke2"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${google_compute_network.vpc-hub2.name}-spoke2"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-hub2-spoke2" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub2-spoke2.name}"
- ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.2${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-hub2-spoke2.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-hub2-spoke2.name}"
+  ip_cidr_range = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.2${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-hub2-spoke2.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-transit" {
- name                            = "${var.vpc-prefix}transit"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${var.vpc-prefix}transit"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-transit" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-transit.name}"
- ip_cidr_range = "${var.subnet1-vpc-transit-first-three-octets}${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-transit.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-transit.name}"
+  ip_cidr_range = "${var.subnet1-vpc-transit-first-three-octets}${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-transit.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-untrusted" {
- name                    = "${var.vpc-prefix}untrusted"
- auto_create_subnetworks = false
- mtu                     = 1460
- routing_mode            = "GLOBAL"
+  name                    = "${var.vpc-prefix}untrusted"
+  auto_create_subnetworks = false
+  mtu                     = 1460
+  routing_mode            = "GLOBAL"
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-untrusted" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-untrusted.name}"
- ip_cidr_range = "${var.subnet1-vpc-untrusted-first-three-octets}${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-untrusted.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-untrusted.name}"
+  ip_cidr_range = "${var.subnet1-vpc-untrusted-first-three-octets}${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-untrusted.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network" "vpc-management" {
- name                            = "${var.vpc-prefix}management"
- auto_create_subnetworks         = false
- mtu                             = 1460
- routing_mode                    = "GLOBAL"
- delete_default_routes_on_create = true
+  name                            = "${var.vpc-prefix}management"
+  auto_create_subnetworks         = false
+  mtu                             = 1460
+  routing_mode                    = "GLOBAL"
+  delete_default_routes_on_create = true
 }
 
 
 resource "google_compute_subnetwork" "subnet1-vpc-management" {
- name          = "${var.subnet1-prefix}${google_compute_network.vpc-management.name}"
- ip_cidr_range = "${var.subnet1-vpc-management-first-three-octets}${var.last-octet-and-mask}"
- region        = var.gcp-region
- network       = google_compute_network.vpc-management.id
- log_config {
-   aggregation_interval = "INTERVAL_5_SEC"
-   flow_sampling        = 1.0
-   metadata             = "INCLUDE_ALL_METADATA"
- }
+  name          = "${var.subnet1-prefix}${google_compute_network.vpc-management.name}"
+  ip_cidr_range = "${var.subnet1-vpc-management-first-three-octets}${var.last-octet-and-mask}"
+  region        = var.gcp-region
+  network       = google_compute_network.vpc-management.id
+  log_config {
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
 }
 
 
 resource "google_compute_network_peering" "peering-hub1-spoke1" {
- name                 = "peering-hub1-spoke1"
- network              = google_compute_network.vpc-hub1.self_link
- peer_network         = google_compute_network.vpc-hub1-spoke1.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-hub1-spoke1"
+  network              = google_compute_network.vpc-hub1.self_link
+  peer_network         = google_compute_network.vpc-hub1-spoke1.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-spoke1-hub1" {
- name                 = "peering-spoke1-hub1"
- network              = google_compute_network.vpc-hub1-spoke1.self_link
- peer_network         = google_compute_network.vpc-hub1.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-spoke1-hub1"
+  network              = google_compute_network.vpc-hub1-spoke1.self_link
+  peer_network         = google_compute_network.vpc-hub1.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-hub1-spoke2" {
- name                 = "peering-hub1-spoke2"
- network              = google_compute_network.vpc-hub1.self_link
- peer_network         = google_compute_network.vpc-hub1-spoke2.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-hub1-spoke2"
+  network              = google_compute_network.vpc-hub1.self_link
+  peer_network         = google_compute_network.vpc-hub1-spoke2.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-spoke2-hub1" {
- name                 = "peering-spoke2-hub1"
- network              = google_compute_network.vpc-hub1-spoke2.self_link
- peer_network         = google_compute_network.vpc-hub1.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-spoke2-hub1"
+  network              = google_compute_network.vpc-hub1-spoke2.self_link
+  peer_network         = google_compute_network.vpc-hub1.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-hub2-spoke1" {
- name                 = "peering-hub2-spoke1"
- network              = google_compute_network.vpc-hub2.self_link
- peer_network         = google_compute_network.vpc-hub2-spoke1.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-hub2-spoke1"
+  network              = google_compute_network.vpc-hub2.self_link
+  peer_network         = google_compute_network.vpc-hub2-spoke1.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-spoke1-hub2" {
- name                 = "peering-spoke1-hub2"
- network              = google_compute_network.vpc-hub2-spoke1.self_link
- peer_network         = google_compute_network.vpc-hub2.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-spoke1-hub2"
+  network              = google_compute_network.vpc-hub2-spoke1.self_link
+  peer_network         = google_compute_network.vpc-hub2.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-hub2-spoke2" {
- name                 = "peering-hub2-spoke2"
- network              = google_compute_network.vpc-hub2.self_link
- peer_network         = google_compute_network.vpc-hub2-spoke2.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-hub2-spoke2"
+  network              = google_compute_network.vpc-hub2.self_link
+  peer_network         = google_compute_network.vpc-hub2-spoke2.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-spoke2-hub2" {
- name                 = "peering-spoke2-hub2"
- network              = google_compute_network.vpc-hub2-spoke2.self_link
- peer_network         = google_compute_network.vpc-hub2.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-spoke2-hub2"
+  network              = google_compute_network.vpc-hub2-spoke2.self_link
+  peer_network         = google_compute_network.vpc-hub2.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-transit-management" {
- name                 = "peering-transit-management"
- network              = google_compute_network.vpc-transit.self_link
- peer_network         = google_compute_network.vpc-management.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-transit-management"
+  network              = google_compute_network.vpc-transit.self_link
+  peer_network         = google_compute_network.vpc-management.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_network_peering" "peering-management-transit" {
- name                 = "peering-management-transit"
- network              = google_compute_network.vpc-management.self_link
- peer_network         = google_compute_network.vpc-transit.self_link
- export_custom_routes = true
- import_custom_routes = true
+  name                 = "peering-management-transit"
+  network              = google_compute_network.vpc-management.self_link
+  peer_network         = google_compute_network.vpc-transit.self_link
+  export_custom_routes = true
+  import_custom_routes = true
 }
 
 
 resource "google_compute_instance" "vm-in-hub1-spoke1" {
- name         = "${var.vm-name-prefix}hub1-spoke1"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-hub1-spoke1.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub1-spoke1.self_link
-   network_ip = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.1${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}hub1-spoke1"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-hub1-spoke1.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub1-spoke1.self_link
+    network_ip = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.1${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-hub1-spoke2" {
- name         = "${var.vm-name-prefix}hub1-spoke2"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-hub1-spoke2.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub1-spoke2.self_link
-   network_ip = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.2${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}hub1-spoke2"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-hub1-spoke2.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub1-spoke2.self_link
+    network_ip = "${var.spoke-first-octet}${var.spoke-hub1-second-octet}.2${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-hub1" {
- name         = "${var.vm-name-prefix}hub1"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-hub1.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub1.self_link
-   network_ip = "${var.subnet1-vpc-hub1-first-three-octets}${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}hub1"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-hub1.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub1.self_link
+    network_ip = "${var.subnet1-vpc-hub1-first-three-octets}${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-hub2-spoke1" {
- name         = "${var.vm-name-prefix}hub2-spoke1"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-hub2-spoke1.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub2-spoke1.self_link
-   network_ip = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.1${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}hub2-spoke1"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-hub2-spoke1.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub2-spoke1.self_link
+    network_ip = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.1${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-hub2-spoke2" {
- name         = "${var.vm-name-prefix}hub2-spoke2"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-hub2-spoke2.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub2-spoke2.self_link
-   network_ip = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.2${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}hub2-spoke2"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-hub2-spoke2.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub2-spoke2.self_link
+    network_ip = "${var.spoke-first-octet}${var.spoke-hub2-second-octet}.2${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-hub2" {
- name         = "${var.vm-name-prefix}hub2"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-hub2.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub2.self_link
-   network_ip = "${var.subnet1-vpc-hub2-first-three-octets}${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}hub2"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-hub2.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub2.self_link
+    network_ip = "${var.subnet1-vpc-hub2-first-three-octets}${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-transit" {
- name         = "${var.vm-name-prefix}transit"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-transit.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-transit.self_link
-   network_ip = "${var.subnet1-vpc-transit-first-three-octets}${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}transit"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-transit.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-transit.self_link
+    network_ip = "${var.subnet1-vpc-transit-first-three-octets}${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_instance" "vm-in-untrusted" {
- name         = "${var.vm-name-prefix}untrusted"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-untrusted.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-untrusted.self_link
-   network_ip = "${var.subnet1-vpc-untrusted-first-three-octets}${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}untrusted"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-untrusted.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-untrusted.self_link
+    network_ip = "${var.subnet1-vpc-untrusted-first-three-octets}${var.test-vm-int-address}"
+
+    # Add this block to assign a public IP address
+    access_config {
+      // Leaving this empty assigns a Public Ephemeral IP
+    }
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
+  metadata_startup_script = file("./installer/install_apache.sh")
 }
 
 
 resource "google_compute_instance" "vm-in-management" {
- name         = "${var.vm-name-prefix}management"
- machine_type = var.vm-machine-type
- zone         = var.gcp-zone
- tags         = ["test-instance"]
- network_interface {
-   network    = google_compute_network.vpc-management.self_link
-   subnetwork = google_compute_subnetwork.subnet1-vpc-management.self_link
-   network_ip = "${var.subnet1-vpc-management-first-three-octets}${var.test-vm-int-address}"
- }
- boot_disk {
-   initialize_params {
-     image = "debian-cloud/debian-11"
-     labels = {
-       my_label = "label"
-     }
-   }
- }
- shielded_instance_config {
-   enable_secure_boot = true
- }
+  name         = "${var.vm-name-prefix}management"
+  machine_type = var.vm-machine-type
+  zone         = var.gcp-zone
+  tags         = ["test-instance"]
+  network_interface {
+    network    = google_compute_network.vpc-management.self_link
+    subnetwork = google_compute_subnetwork.subnet1-vpc-management.self_link
+    network_ip = "${var.subnet1-vpc-management-first-three-octets}${var.test-vm-int-address}"
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "label"
+      }
+    }
+  }
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1"
- network   = google_compute_network.vpc-hub1.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1"
+  network   = google_compute_network.vpc-hub1.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1-spoke1" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1-spoke1"
- network   = google_compute_network.vpc-hub1-spoke1.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1-spoke1"
+  network   = google_compute_network.vpc-hub1-spoke1.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1-spoke2" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1-spoke2"
- network   = google_compute_network.vpc-hub1-spoke2.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub1-spoke2"
+  network   = google_compute_network.vpc-hub1-spoke2.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2"
- network   = google_compute_network.vpc-hub2.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2"
+  network   = google_compute_network.vpc-hub2.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2-spoke1" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2-spoke1"
- network   = google_compute_network.vpc-hub2-spoke1.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2-spoke1"
+  network   = google_compute_network.vpc-hub2-spoke1.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2-spoke2" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2-spoke2"
- network   = google_compute_network.vpc-hub2-spoke2.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-hub2-spoke2"
+  network   = google_compute_network.vpc-hub2-spoke2.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-transit" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-transit"
- network   = google_compute_network.vpc-transit.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-transit"
+  network   = google_compute_network.vpc-transit.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-untrusted" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-untrusted"
- network   = google_compute_network.vpc-untrusted.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-untrusted"
+  network   = google_compute_network.vpc-untrusted.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]), [local.cleaned_ip])
 }
 
 
 resource "google_compute_firewall" "allow-ssh-rdp-icmp-http-https-from-private-vpc-management" {
- name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-management"
- network   = google_compute_network.vpc-management.self_link
- direction = "INGRESS"
- priority  = "500"
- allow {
-   protocol = "icmp"
- }
- allow {
-   protocol = "tcp"
-   ports    = ["22", "80", "443", "3389"]
- }
- source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
+  name      = "allow-ssh-rdp-icmp-http-https-from-private-vpc-management"
+  network   = google_compute_network.vpc-management.self_link
+  direction = "INGRESS"
+  priority  = "500"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80", "443", "3389"]
+  }
+  source_ranges = setunion(var.fw-rule-source-ranges, toset([var.health-check-source-ip-range-1, var.health-check-source-ip-range-2]))
 }
 
 
 resource "google_compute_instance" "nva1" {
- name           = "nva1"
- machine_type   = "n1-standard-8"
- zone           = var.gcp-zone
- can_ip_forward = true
- boot_disk {
-   initialize_params {
-     image = "cisco-public/csr1000v1721r-byol"
-     type  = "pd-ssd"
-   }
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-untrusted.self_link
-   network_ip = "${var.subnet1-vpc-untrusted-first-three-octets}${var.nva1-int-address}"
-   access_config {
-     # ephemeral public IP
-   }
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-management.self_link
-   network_ip = "${var.subnet1-vpc-management-first-three-octets}${var.nva1-int-address}"
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-transit.self_link
-   network_ip = "${var.subnet1-vpc-transit-first-three-octets}${var.nva1-int-address}"
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub1.self_link
-   network_ip = "${var.subnet1-vpc-hub1-first-three-octets}${var.nva1-int-address}"
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub2.self_link
-   network_ip = "${var.subnet1-vpc-hub2-first-three-octets}${var.nva1-int-address}"
- }
- metadata = {
-   # Note: the "1.1.1" in the cidrnetmask function is a placeholder, ie doesn't matter, only the mask matters) 
-   startup-script     = <<EOS
+  name           = "nva1"
+  machine_type   = "n1-standard-8"
+  zone           = var.gcp-zone
+  can_ip_forward = true
+  boot_disk {
+    initialize_params {
+      image = "cisco-public/csr1000v1721r-byol"
+      type  = "pd-ssd"
+    }
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-untrusted.self_link
+    network_ip = "${var.subnet1-vpc-untrusted-first-three-octets}${var.nva1-int-address}"
+    access_config {
+      # ephemeral public IP
+    }
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-management.self_link
+    network_ip = "${var.subnet1-vpc-management-first-three-octets}${var.nva1-int-address}"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-transit.self_link
+    network_ip = "${var.subnet1-vpc-transit-first-three-octets}${var.nva1-int-address}"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub1.self_link
+    network_ip = "${var.subnet1-vpc-hub1-first-three-octets}${var.nva1-int-address}"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub2.self_link
+    network_ip = "${var.subnet1-vpc-hub2-first-three-octets}${var.nva1-int-address}"
+  }
+  metadata = {
+    # Note: the "1.1.1" in the cidrnetmask function is a placeholder, ie doesn't matter, only the mask matters) 
+    startup-script     = <<EOS
 Section: IOS configuration
 username ${var.admin-name} privilege 15 secret 9 ${var.admin-secret-password}
 !
@@ -867,48 +896,48 @@ ip access-list standard NAT_ACL
 20 permit 10.2.0.0 0.0.255.255
 30 permit 172.16.0.0 0.0.255.255
 EOS
-   serial-port-enable = true
- }
+    serial-port-enable = true
+  }
 }
 
 
 resource "google_compute_instance" "nva2" {
- name           = "nva2"
- machine_type   = "n1-standard-8"
- zone           = var.gcp-zone
- can_ip_forward = true
- boot_disk {
-   initialize_params {
-     image = "cisco-public/csr1000v1721r-byol"
-     type  = "pd-ssd"
-   }
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-untrusted.self_link
-   network_ip = "${var.subnet1-vpc-untrusted-first-three-octets}${var.nva2-int-address}"
-   access_config {
-     # ephemeral public IP
-   }
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-management.self_link
-   network_ip = "${var.subnet1-vpc-management-first-three-octets}${var.nva2-int-address}"
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-transit.self_link
-   network_ip = "${var.subnet1-vpc-transit-first-three-octets}${var.nva2-int-address}"
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub1.self_link
-   network_ip = "${var.subnet1-vpc-hub1-first-three-octets}${var.nva2-int-address}"
- }
- network_interface {
-   subnetwork = google_compute_subnetwork.subnet1-vpc-hub2.self_link
-   network_ip = "${var.subnet1-vpc-hub2-first-three-octets}${var.nva2-int-address}"
- }
- metadata = {
-   # Note: the "1.1.1" in the cidrnetmask function is a placeholder, ie doesn't matter, only the mask matters) 
-   startup-script     = <<EOS
+  name           = "nva2"
+  machine_type   = "n1-standard-8"
+  zone           = var.gcp-zone
+  can_ip_forward = true
+  boot_disk {
+    initialize_params {
+      image = "cisco-public/csr1000v1721r-byol"
+      type  = "pd-ssd"
+    }
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-untrusted.self_link
+    network_ip = "${var.subnet1-vpc-untrusted-first-three-octets}${var.nva2-int-address}"
+    access_config {
+      # ephemeral public IP
+    }
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-management.self_link
+    network_ip = "${var.subnet1-vpc-management-first-three-octets}${var.nva2-int-address}"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-transit.self_link
+    network_ip = "${var.subnet1-vpc-transit-first-three-octets}${var.nva2-int-address}"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub1.self_link
+    network_ip = "${var.subnet1-vpc-hub1-first-three-octets}${var.nva2-int-address}"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet1-vpc-hub2.self_link
+    network_ip = "${var.subnet1-vpc-hub2-first-three-octets}${var.nva2-int-address}"
+  }
+  metadata = {
+    # Note: the "1.1.1" in the cidrnetmask function is a placeholder, ie doesn't matter, only the mask matters) 
+    startup-script     = <<EOS
 Section: IOS configuration
 username ${var.admin-name} privilege 15 secret 9 ${var.admin-secret-password}
 !
@@ -1072,125 +1101,182 @@ ip access-list standard NAT_ACL
 20 permit 10.2.0.0 0.0.255.255
 30 permit 172.16.0.0 0.0.255.255
 EOS
-   serial-port-enable = true
- }
+    serial-port-enable = true
+  }
 }
 
 
 resource "google_compute_health_check" "hc" {
- name               = var.health-check-name
- check_interval_sec = 1
- timeout_sec        = 1
- tcp_health_check {
-   port = "80"
- }
+  name               = var.health-check-name
+  check_interval_sec = 1
+  timeout_sec        = 1
+  tcp_health_check {
+    port = "80"
+  }
 }
 
 
 resource "google_compute_instance_group" "ig-nvas" {
- name      = var.instance-group-name
- instances = [google_compute_instance.nva1.id, google_compute_instance.nva2.id]
- zone      = var.gcp-zone
+  name      = var.instance-group-name
+  instances = [google_compute_instance.nva1.id, google_compute_instance.nva2.id]
+  zone      = var.gcp-zone
 }
 
 
 resource "google_compute_region_backend_service" "ilb-backend-transit" {
- name          = var.ilb-backend-transit-name
- region        = var.gcp-region
- health_checks = [google_compute_health_check.hc.id]
- protocol      = "TCP"
- network       = google_compute_network.vpc-transit.self_link
- backend {
-   group          = google_compute_instance_group.ig-nvas.self_link
-   balancing_mode = "CONNECTION"
- }
+  name          = var.ilb-backend-transit-name
+  region        = var.gcp-region
+  health_checks = [google_compute_health_check.hc.id]
+  protocol      = "TCP"
+  network       = google_compute_network.vpc-transit.self_link
+  backend {
+    group          = google_compute_instance_group.ig-nvas.self_link
+    balancing_mode = "CONNECTION"
+  }
 }
 
 
 resource "google_compute_forwarding_rule" "ilb-forwarding-rule-transit" {
- name                  = var.ilb-forwarding-rule-transit-name
- region                = var.gcp-region
- load_balancing_scheme = "INTERNAL"
- backend_service       = google_compute_region_backend_service.ilb-backend-transit.id
- all_ports             = true
- ip_address            = "${var.subnet1-vpc-transit-first-three-octets}${var.ilb-forwarding-rule-address}"
- network               = google_compute_network.vpc-transit.name
- subnetwork            = google_compute_subnetwork.subnet1-vpc-transit.name
+  name                  = var.ilb-forwarding-rule-transit-name
+  region                = var.gcp-region
+  load_balancing_scheme = "INTERNAL"
+  backend_service       = google_compute_region_backend_service.ilb-backend-transit.id
+  all_ports             = true
+  ip_address            = "${var.subnet1-vpc-transit-first-three-octets}${var.ilb-forwarding-rule-address}"
+  network               = google_compute_network.vpc-transit.name
+  subnetwork            = google_compute_subnetwork.subnet1-vpc-transit.name
 }
 
 
 resource "google_compute_route" "default-route-to-ilb-transit" {
- name         = var.default-route-to-ilb-transit-name
- dest_range   = "0.0.0.0/0"
- network      = google_compute_network.vpc-transit.name
- next_hop_ilb = google_compute_forwarding_rule.ilb-forwarding-rule-transit.ip_address
- priority     = 500
+  name         = var.default-route-to-ilb-transit-name
+  dest_range   = "0.0.0.0/0"
+  network      = google_compute_network.vpc-transit.name
+  next_hop_ilb = google_compute_forwarding_rule.ilb-forwarding-rule-transit.ip_address
+  priority     = 500
 }
 
 
 resource "google_compute_region_backend_service" "ilb-backend-hub1" {
- name          = var.ilb-backend-hub1-name
- region        = var.gcp-region
- health_checks = [google_compute_health_check.hc.id]
- protocol      = "TCP"
- network       = google_compute_network.vpc-hub1.self_link
- backend {
-   group          = google_compute_instance_group.ig-nvas.self_link
-   balancing_mode = "CONNECTION"
- }
+  name          = var.ilb-backend-hub1-name
+  region        = var.gcp-region
+  health_checks = [google_compute_health_check.hc.id]
+  protocol      = "TCP"
+  network       = google_compute_network.vpc-hub1.self_link
+  backend {
+    group          = google_compute_instance_group.ig-nvas.self_link
+    balancing_mode = "CONNECTION"
+  }
 }
 
 
 resource "google_compute_forwarding_rule" "ilb-forwarding-rule-hub1" {
- name                  = var.ilb-forwarding-rule-hub1-name
- region                = var.gcp-region
- load_balancing_scheme = "INTERNAL"
- backend_service       = google_compute_region_backend_service.ilb-backend-hub1.id
- all_ports             = true
- ip_address            = "${var.subnet1-vpc-hub1-first-three-octets}${var.ilb-forwarding-rule-address}"
- network               = google_compute_network.vpc-hub1.name
- subnetwork            = google_compute_subnetwork.subnet1-vpc-hub1.name
+  name                  = var.ilb-forwarding-rule-hub1-name
+  region                = var.gcp-region
+  load_balancing_scheme = "INTERNAL"
+  backend_service       = google_compute_region_backend_service.ilb-backend-hub1.id
+  all_ports             = true
+  ip_address            = "${var.subnet1-vpc-hub1-first-three-octets}${var.ilb-forwarding-rule-address}"
+  network               = google_compute_network.vpc-hub1.name
+  subnetwork            = google_compute_subnetwork.subnet1-vpc-hub1.name
 }
 
 
 resource "google_compute_route" "default-route-to-ilb-hub1" {
- name         = var.default-route-to-ilb-hub1-name
- dest_range   = "0.0.0.0/0"
- network      = google_compute_network.vpc-hub1.name
- next_hop_ilb = google_compute_forwarding_rule.ilb-forwarding-rule-hub1.ip_address
- priority     = 500
+  name         = var.default-route-to-ilb-hub1-name
+  dest_range   = "0.0.0.0/0"
+  network      = google_compute_network.vpc-hub1.name
+  next_hop_ilb = google_compute_forwarding_rule.ilb-forwarding-rule-hub1.ip_address
+  priority     = 500
 }
 
 
 resource "google_compute_region_backend_service" "ilb-backend-hub2" {
- name          = var.ilb-backend-hub2-name
- region        = var.gcp-region
- health_checks = [google_compute_health_check.hc.id]
- protocol      = "TCP"
- network       = google_compute_network.vpc-hub2.self_link
- backend {
-   group          = google_compute_instance_group.ig-nvas.self_link
-   balancing_mode = "CONNECTION"
- }
+  name          = var.ilb-backend-hub2-name
+  region        = var.gcp-region
+  health_checks = [google_compute_health_check.hc.id]
+  protocol      = "TCP"
+  network       = google_compute_network.vpc-hub2.self_link
+  backend {
+    group          = google_compute_instance_group.ig-nvas.self_link
+    balancing_mode = "CONNECTION"
+  }
 }
 
 
 resource "google_compute_forwarding_rule" "ilb-forwarding-rule-hub2" {
- name                  = var.ilb-forwarding-rule-hub2-name
- region                = var.gcp-region
- load_balancing_scheme = "INTERNAL"
- backend_service       = google_compute_region_backend_service.ilb-backend-hub2.id
- all_ports             = true
- ip_address            = "${var.subnet1-vpc-hub2-first-three-octets}${var.ilb-forwarding-rule-address}"
- network               = google_compute_network.vpc-hub2.name
- subnetwork            = google_compute_subnetwork.subnet1-vpc-hub2.name
+  name                  = var.ilb-forwarding-rule-hub2-name
+  region                = var.gcp-region
+  load_balancing_scheme = "INTERNAL"
+  backend_service       = google_compute_region_backend_service.ilb-backend-hub2.id
+  all_ports             = true
+  ip_address            = "${var.subnet1-vpc-hub2-first-three-octets}${var.ilb-forwarding-rule-address}"
+  network               = google_compute_network.vpc-hub2.name
+  subnetwork            = google_compute_subnetwork.subnet1-vpc-hub2.name
 }
 
 
 resource "google_compute_route" "default-route-to-ilb-hub2" {
- name         = var.default-route-to-ilb-hub2-name
- dest_range   = "0.0.0.0/0"
- network      = google_compute_network.vpc-hub2.name
- next_hop_ilb = google_compute_forwarding_rule.ilb-forwarding-rule-hub2.ip_address
- priority     = 500
+  name         = var.default-route-to-ilb-hub2-name
+  dest_range   = "0.0.0.0/0"
+  network      = google_compute_network.vpc-hub2.name
+  next_hop_ilb = google_compute_forwarding_rule.ilb-forwarding-rule-hub2.ip_address
+  priority     = 500
+}
+
+
+resource "google_compute_instance_group" "untrusted-group" {
+  name        = "untrusted-vm-group"
+  zone        = var.gcp-zone
+  description = "Static container for our single Debian instance"
+
+  # Wrap your single VM inside the group's array
+  instances = [
+    google_compute_instance.vm-in-untrusted.self_link
+  ]
+
+  named_port {
+    name = "http"
+    port = 80
+  }
+}
+
+
+module "gce-lb-http" {
+  source  = "GoogleCloudPlatform/lb-http/google"
+  version = "~> 14.0"
+
+  project = var.project-id
+  name    = "group-http-untrusted-elb"
+  #target_tags       = [module.mig1.target_tags, module.mig2.target_tags]
+  backends = {
+    default = {
+      port        = 80
+      protocol    = "HTTP"
+      port_name   = "http"
+      timeout_sec = 10
+      enable_cdn  = false
+
+
+      health_check = {
+        request_path = "/"
+        port         = 80
+      }
+
+      log_config = {
+        enable      = true
+        sample_rate = 1.0
+      }
+
+
+      groups = [
+        {
+          # Each node pool instance group should be added to the backend.
+          group = google_compute_instance_group.untrusted-group.self_link
+        },
+      ]
+
+
+    }
+  }
 }
