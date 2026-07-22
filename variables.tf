@@ -84,7 +84,7 @@ variable "subnet1-vpc-untrusted-first-three-octets" {
 
 variable "subnet1-vpc-transit-first-three-octets" {
   type    = string
-  default = "192.168.10"
+  default = "192.168.50"
 }
 
 
@@ -329,4 +329,25 @@ variable "health-check-source-ip-range-1" {
 variable "health-check-source-ip-range-2" {
   type    = string
   default = "130.211.0.0/22"
+}
+
+
+variable "toggle_cloud_vpn" {
+  description = "Toggle switch to enable Cloud VPN"
+  type        = bool
+  default     = true
+}
+
+// Classic VPN
+
+variable "remote_subnet" {
+  description = "The subnets at the remote location. Use the on-premises CIDR."
+  type        = list(string)
+  default     = ["192.168.0.0/16"]
+}
+
+variable "shared_secret" {
+  description = "The shared secret between tunnels."
+  type        = string
+  default     = "mySecret"
 }
