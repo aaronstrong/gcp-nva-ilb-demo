@@ -723,6 +723,12 @@ resource "google_compute_instance" "nva1" {
 Section: IOS configuration
 username ${var.admin-name} privilege 15 secret 9 ${var.admin-secret-password}
 !
+! --- Enable web UI ---
+ip http server
+ip http secure-server
+ip http authentication local
+crypto key generate rsa modulus 2048
+!
 vrf definition ${var.vrf-transit-name}
 rd ${var.vrf-transit-route-descriptor}
 address-family ipv4
@@ -927,6 +933,12 @@ resource "google_compute_instance" "nva2" {
     startup-script     = <<EOS
 Section: IOS configuration
 username ${var.admin-name} privilege 15 secret 9 ${var.admin-secret-password}
+!
+! --- Enable web UI ---
+ip http server
+ip http secure-server
+ip http authentication local
+crypto key generate rsa modulus 2048
 !
 vrf definition ${var.vrf-transit-name}
 rd ${var.vrf-transit-route-descriptor}
