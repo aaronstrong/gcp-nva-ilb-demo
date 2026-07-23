@@ -78,19 +78,19 @@ variable "subnet1-vpc-hub2-first-three-octets" {
 
 variable "subnet1-vpc-untrusted-first-three-octets" {
   type    = string
-  default = "192.168.1"
+  default = "172.16.5"
 }
 
 
 variable "subnet1-vpc-transit-first-three-octets" {
   type    = string
-  default = "192.168.50"
+  default = "172.16.4"
 }
 
 
 variable "subnet1-vpc-management-first-three-octets" {
   type    = string
-  default = "192.168.100"
+  default = "172.16.3"
 }
 
 
