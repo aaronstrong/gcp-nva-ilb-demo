@@ -1279,3 +1279,35 @@ module "gce-lb-http" {
     }
   }
 }
+
+
+
+
+# Deploy a cloud router that will be attached to the classic VPN
+resource "google_compute_router" "cloud_router" {
+  count   = var.toggle_cloud_vpn == true ? 1 : 0
+  name    = "cr-${var.gcp-region}-to-prod-vpc-tunnels"
+  region  = var.gcp-region
+  network = google_compute_network.vpc-transit.self_link
+  project = var.project-id
+}
+
+module "classic_vpn" {
+  count = var.toggle_cloud_vpn == true ? 1 : 0
+  # Deploy the classic VPN in GCP using the GCP module. Pin the Github
+  # module to a specific version
+  source  = "terraform-google-modules/vpn/google"
+  version = "~> 7.0"
+
+  project_id         = var.project-id
+  network            = google_compute_network.vpc-transit.self_link
+  region             = var.gcp-region
+  gateway_name       = "vpn-managed-internal"
+  tunnel_name_prefix = "vpn-tn-manage-internal"
+  shared_secret      = var.shared_secret
+  tunnel_count       = 1
+  peer_ips           = ["${local.cleaned_ip}"]
+  route_priority     = 1000
+  remote_subnet      = var.remote_subnet
+  ike_version        = 2
+}
