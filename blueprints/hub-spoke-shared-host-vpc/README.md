@@ -4,7 +4,7 @@ Companion doc to [csr1000v-routing-documentation.md](./csr1000v-routing-document
 tables in detail. This doc describes the topology shown in the architecture diagram: the
 GCP projects, VPCs, subnets, VMs, and how they connect.
 
-[](./diagram.png)
+![](./diagram.png)
 
 ## 1. Projects
 
